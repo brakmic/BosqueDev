@@ -1,0 +1,8 @@
+{
+  "name": "Bosque DevContainer",
+  "build": {
+    "dockerfile": "../Dockerfile"
+  },
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/host_workspace,type=bind,consistency=cached"
+}
