@@ -5,7 +5,6 @@ ARG PNPM_VERSION=9.15.1
 ENV PNPM_VERSION=${PNPM_VERSION}
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH:/usr/local/bin
-ENV HOME=/home/bosquedev
 
 # Configure default system locale settings
 ENV LANG=en_US.UTF-8
@@ -85,7 +84,10 @@ SHELL ["/bin/bash", "-c"]
 # (10) Set up the workspace and clone the BosqueCore repository
 ###############################################################################
 WORKDIR /workspace
-RUN git clone --recursive https://github.com/BosqueLanguage/BosqueCore.git
+ARG BRANCH=main
+ENV BRANCH=${BRANCH}
+RUN git clone --recursive -b ${BRANCH} https://github.com/BosqueLanguage/BosqueCore.git \
+    && cd BosqueCore && git pull && cd /workspace
 RUN cp BosqueCore/package.json ./
 RUN pnpm install
 
@@ -107,18 +109,21 @@ RUN pnpm build
 ###############################################################################
 # (13) Adjust file ownership for the non-root user
 ###############################################################################
-RUN chown -R bosquedev:bosquedev /workspace /pnpm /usr/local/bin/pnpm /home/bosquedev
+ARG NONROOT_USER=bosquedev
+ENV NONROOT_USER=${NONROOT_USER}
+ENV HOME=/home/${NONROOT_USER}
+RUN chown -R ${NONROOT_USER}:${NONROOT_USER} /workspace /pnpm /usr/local/bin/pnpm ${HOME}
 
 ###############################################################################
 # (14) Switch to the non-root user
 ###############################################################################
-USER bosquedev
+USER ${NONROOT_USER}
 
 ###############################################################################
 # (15) Configure default shell environment for the user
 ###############################################################################
-RUN cp /etc/skel/.bashrc /home/bosquedev/.bashrc \
-    && cp /etc/skel/.profile /home/bosquedev/.profile
+RUN cp /etc/skel/.bashrc ${HOME}/.bashrc \
+    && cp /etc/skel/.profile ${HOME}/.profile
 
 ###############################################################################
 # (16) Make bosque.js globally executable
@@ -135,7 +140,15 @@ RUN sed -i '1i #!/usr/bin/env node' $BOSQUE_JS_PATH \
 RUN sudo ln -sf /workspace/bin/src/cmd/bosque.js /usr/local/bin/bosque
 
 ###############################################################################
-# (17) Add shell aliases
+# (17) Clone Bosque Language Tools for VSCode integration (syntax highlighting)
+###############################################################################
+ENV BSQ_LANG_TOOLS_PATH=${HOME}/.vscode-server/extensions/bosque-language-tools
+RUN mkdir -p ${BSQ_LANG_TOOLS_PATH} \
+    && git clone https://github.com/BosqueLanguage/bosque-language-tools.git ${BSQ_LANG_TOOLS_PATH} \
+    && cd ${BSQ_LANG_TOOLS_PATH} && git pull && cd /workspace
+
+###############################################################################
+# (18) Add shell aliases
 ###############################################################################
 RUN echo -e '\
 alias ll="ls -la"\n\
@@ -152,32 +165,32 @@ alias nano="nano -c"\n\
 alias ..="cd .."\n\
 alias ...="cd ../.."\n\
 alias ....="cd ../../.."\n\
-' >> /home/bosquedev/.bash_aliases
+' >> ${HOME}/.bash_aliases
 
 ###############################################################################
-# (18) Configure nano with syntax highlighting for the user
+# (19) Configure nano with syntax highlighting for the user
 ###############################################################################
-RUN echo "include /usr/share/nano-syntax/*.nanorc" >> /home/bosquedev/.nanorc
+RUN echo "include /usr/share/nano-syntax/*.nanorc" >> ${HOME}/.nanorc
 
 ###############################################################################
-# (19) Set nano as the default editor and adjust ownership of configuration files
+# (20) Set nano as the default editor and adjust ownership of config files
 ###############################################################################
-RUN echo "export EDITOR=nano" >> /home/bosquedev/.bash_profile \
-    && chown bosquedev:bosquedev /home/bosquedev/.bashrc \
-    /home/bosquedev/.profile \
-    /home/bosquedev/.bash_profile \
-    /home/bosquedev/.nanorc
+RUN echo "export EDITOR=nano" >> ${HOME}/.bash_profile \
+    && chown bosquedev:bosquedev ${HOME}/.bashrc \
+    ${HOME}/.profile \
+    ${HOME}/.bash_profile \
+    ${HOME}/.nanorc
 
 ###############################################################################
-# (20) Customize the terminal prompt for the user
+# (21) Customize the terminal prompt for the user
 ###############################################################################
 ENV TERM=xterm-256color
 RUN echo "\
 # Colorized PS1 prompt\n\
 export PS1=\"\[\e[0;32m\]\u@\h\[\e[m\]:\[\e[0;34m\]\w\[\e[m\]\$ \"\
-" >> /home/bosquedev/.bashrc
+" >> ${HOME}/.bashrc
 
 ###############################################################################
-# (21) Default command to start an interactive bash shell
+# (22) Default command to start an interactive bash shell
 ###############################################################################
 CMD ["bash", "-i"]
