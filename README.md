@@ -1,4 +1,4 @@
-# Bosque Development Environment Dockerfile
+# Bosque Development Environment
 
 This repository provides a Dockerfile to build a fully functional Bosque Development Environment. You can either use prebuilt Docker images or build your own image locally.
 
