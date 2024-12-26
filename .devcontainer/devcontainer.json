@@ -4,5 +4,20 @@
     "dockerfile": "../Dockerfile"
   },
   "workspaceFolder": "/workspace",
-  "workspaceMount": "source=${localWorkspaceFolder},target=/host_workspace,type=bind,consistency=cached"
+  "workspaceMount": "source=${localWorkspaceFolder},target=/host_workspace,type=bind,consistency=cached",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.exclude": {
+          "**/.git": true,
+          "**/.DS_Store": true
+        }
+      }
+    }
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder}/scripts/setup-workspace.mjs,target=/workspace/scripts/setup-workspace.mjs,type=bind"
+  ],
+  "postCreateCommand": "node /workspace/scripts/setup-workspace.mjs && ln -sf /workspace/dev.code-workspace /home/bosquedev/.vscode-server/dev.code-workspace",
+  "remoteUser": "bosquedev"
 }
