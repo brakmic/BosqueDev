@@ -2,6 +2,9 @@
 
 This repository provides a Dockerfile to build a fully functional Bosque Development Environment. You can either use prebuilt Docker images or build your own image locally.
 
+![Docker Pulls](https://badgen.net/docker/pulls/brakmic/bosquedev?icon=docker)
+[![Docker Image Size](https://badgen.net/docker/size/brakmic/bosquedev?icon=docker&label=image%20size)](https://hub.docker.com/r/brakmic/bosquedev/)
+
 ## Prebuilt Docker Images
 Prebuilt Docker images are available [here](https://hub.docker.com/r/brakmic/bosquedev).  
 Pull the image directly using Docker:
