@@ -13,13 +13,14 @@ docker pull brakmic/bosquedev:latest
 ## Building Your Own Image
 To build the Docker image yourself:
 
-1. Clone the [BosqueCore](https://github.com/BosqueLanguage/BosqueCore) repository.
-2. Copy this Dockerfile into the cloned repository's root directory.
-3. Build the Docker image using the following command:
+1. Clone this repository.
+2. Build the Docker image using the following command:
 
 ```bash
 docker build -t your_user_prefix/bosquedev:latest .
 ```
+
+The build process will automatically clone the [BosqueCore](https://github.com/BosqueLanguage/BosqueCore) repository during the build stage, so no additional manual steps are required.
 
 ## Running the Docker Container
 
