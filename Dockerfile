@@ -1,7 +1,7 @@
 FROM ubuntu:22.04
 
 # (1) Set environment variables for pnpm
-ARG PNPM_VERSION=9.15.1
+ARG PNPM_VERSION=9.15.2
 ENV PNPM_VERSION=${PNPM_VERSION}
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH:/usr/local/bin
@@ -60,7 +60,6 @@ RUN curl -fsSL https://get.pnpm.io/install.sh | bash -s -- --version $PNPM_VERSI
 ###############################################################################
 # (6) Install global Node.js/TypeScript development tools
 ###############################################################################
-RUN pnpm self-update
 RUN pnpm add -g typescript ts-node eslint prettier node-gyp
 
 ###############################################################################
