@@ -60,6 +60,7 @@ RUN curl -fsSL https://get.pnpm.io/install.sh | bash -s -- --version $PNPM_VERSI
 ###############################################################################
 # (6) Install global Node.js/TypeScript development tools
 ###############################################################################
+RUN pnpm self-update
 RUN pnpm add -g typescript ts-node eslint prettier node-gyp
 
 ###############################################################################
@@ -71,9 +72,11 @@ RUN mkdir -p /usr/share/nano-syntax \
 ###############################################################################
 # (8) Create a non-root user with passwordless sudo
 ###############################################################################
-RUN useradd -m -s /bin/bash bosquedev \
-    && echo "bosquedev ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/bosquedev \
-    && chmod 0440 /etc/sudoers.d/bosquedev
+ARG NONROOT_USER=bosquedev
+ENV NONROOT_USER=${NONROOT_USER}
+RUN useradd -m -s /bin/bash ${NONROOT_USER} \
+    && echo "${NONROOT_USER} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${NONROOT_USER} \
+    && chmod 0440 /etc/sudoers.d/${NONROOT_USER}
 
 ###############################################################################
 # (9) Set default shell to bash
@@ -109,9 +112,6 @@ RUN pnpm build
 ###############################################################################
 # (13) Adjust file ownership for the non-root user
 ###############################################################################
-ARG NONROOT_USER=bosquedev
-ENV NONROOT_USER=${NONROOT_USER}
-ENV HOME=/home/${NONROOT_USER}
 RUN chown -R ${NONROOT_USER}:${NONROOT_USER} /workspace /pnpm /usr/local/bin/pnpm ${HOME}
 
 ###############################################################################
@@ -122,6 +122,7 @@ USER ${NONROOT_USER}
 ###############################################################################
 # (15) Configure default shell environment for the user
 ###############################################################################
+ENV HOME=/home/${NONROOT_USER}
 RUN cp /etc/skel/.bashrc ${HOME}/.bashrc \
     && cp /etc/skel/.profile ${HOME}/.profile
 
@@ -176,7 +177,7 @@ RUN echo "include /usr/share/nano-syntax/*.nanorc" >> ${HOME}/.nanorc
 # (20) Set nano as the default editor and adjust ownership of config files
 ###############################################################################
 RUN echo "export EDITOR=nano" >> ${HOME}/.bash_profile \
-    && chown bosquedev:bosquedev ${HOME}/.bashrc \
+    && chown ${NONROOT_USER}:${NONROOT_USER} ${HOME}/.bashrc \
     ${HOME}/.profile \
     ${HOME}/.bash_profile \
     ${HOME}/.nanorc
